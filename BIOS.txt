@@ -1,0 +1,258 @@
+#-_-_-_-_-_-_-_-_-_-_-# BIOS #
+#version du BIOS#
+bios_name = "Reaper"
+bios_version_main = "2.0"
+bios_socket = "Reaper"
+#-_-_-# demarage #
+#verification des bibliotheques 
+import subprocess
+import sys
+import time
+import os
+from lybrary import *
+def check_and_install_library(library_name):
+    try:
+        # Tente d'importer la bibliothèque
+        __import__(library_name)
+        print(f"La bibliothèque {library_name} est déjà installée.")
+    except ImportError:
+        print(f"La bibliothèque {library_name} n'est pas installée. Installation en cours...")
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", library_name])
+            print(f"La bibliothèque {library_name} a été installée avec succès.")
+        except subprocess.CalledProcessError as e:
+            print(f"Erreur lors de l'installation de la bibliothèque {library_name}: {e}")
+        except Exception as e:
+            print(f"Une erreur inattendue s'est produite : {e}")
+def verif():
+    form1 = RScodrev(4)
+    form2 = string_to_list(form1)
+    for i in form2:
+        check_and_install_library(i)
+#verification des scripts
+def check_script_existence(script_name):
+    if os.path.isfile(script_name):
+        return True
+    else:
+        return False
+
+def print_error_message(script_name):
+    print("\033[91mErrorFatal:", script_name, "n'existe pas.\033[0m")
+
+def verifS(console, core):
+    scripts_to_check = [console, core]  # Remplacez par les noms de vos scripts
+
+    for script_name in scripts_to_check:
+        if check_script_existence(script_name):
+            print(f"le script {script_name} existe ")
+        else:
+            print_error_message(script_name)
+            stop()
+
+#load#
+def load():
+    print(f"Bienvenue sur le BIOS {bios_name} V{bios_version_main}")
+    print(f"BOOT on socketB {bios_socket}")
+    print("Chargement des applications .")
+    print("verification de votre socket ...")
+    ui_loadingbar(5)
+    print("####")
+    time.sleep(0.1)
+    consoleL()
+    print("######")
+    time.sleep(0.1)
+    consoleL()
+    print("########")
+    time.sleep(0.1)
+    consoleL()
+    print("######### COMPLETED")
+    txt = RScodrev(1)
+    print(f"socket = {txt}")
+    if txt == "Reaper":
+        print("socket Reaper détéctée , fonctionne par ROS2")
+        ac = telecharger_fichier("BIOS.binR", "")
+        if comparatif("BIOS.binR", ac) == False :
+            print("mise a jour du fichier binR ...")
+            delf("BIOS.binR")
+            telecharger_fichier("BIOS.binR", 1)
+        else:
+            print("fichier binR a jour")
+    console = RScodrev(2)
+    bios = telecharger_fichier("BIOS.txt", "")
+    if comparatif("BIOS.py", telecharger_fichier("BIOS.txt", "")) == False:
+        telecharger_fichier("BIOS.txt", "1")
+        majserv()
+        sys.exit()
+    print(f"service de console : {console}")
+    core = RScodrev(3)
+    print(f"service de core : {core}")
+    time.sleep(3)
+    os.system("cls")
+    print("---------BIOS---------")
+    time.sleep(0.1)
+    print("chargement du bios")
+    print("verification des librairies ...")
+    time.sleep(0.2)
+    verif()
+    print("verification de l'existence des scripts principaux")
+    time.sleep(0.2)
+    verifS(console, core)
+    time.sleep(1)
+    run_script_in_new_console(console)
+    run_script_in_new_console(core)
+    print("BOOT completed")
+    time.sleep(3)
+# codage via RScod #
+def RScod(line_number, text):
+    def string_to_binary(input_string):
+        binary_list = [format(ord(char), '08b') for char in input_string]
+        binary_string = ','.join(binary_list)
+        return binary_string
+    def write_to_line(line_number, text):
+        filename = "BIOS.binR"
+        with open(filename, 'r') as file:
+            lines = file.readlines()
+
+        if 1 <= line_number <= len(lines):
+            lines[line_number - 1] = text + '\n'
+
+        with open(filename, 'w') as file:
+            file.writelines(lines)
+    text2 = string_to_binary(text)
+    write_to_line(line_number, text2)
+
+def RScodrev(line_number):
+    line_number = int(line_number)
+    with open('BIOS.binR', 'r') as file:
+        lines = file.readlines()
+        encoded_text = lines[line_number - 1].strip()
+        binary_list = encoded_text.split(',')  # Utiliser une virgule comme séparateur
+        decoded_text = ''.join(chr(int(binary, 2)) for binary in binary_list)
+        return decoded_text
+
+
+#utility#
+def string_to_list(input_string):
+    # Utilisez la méthode split(',') pour diviser la chaîne en éléments individuels
+    elements = input_string.split(',')
+    return elements
+def consoleL():
+    print("\033[F\033[K", end='', flush=True)
+def majserv():
+    run_script_in_invisible_console("assistant.py")
+def consoleP(n):
+    for _ in range(n):
+        sys.stdout.write('\033[F\033[K')
+def stop():
+    time.sleep(1)
+    stop()
+def run_script_in_new_console(script_name):
+    try:
+        subprocess.Popen(['start', 'cmd', '/c', 'python', script_name], shell=True)
+    except Exception as e:
+        print(f"Erreur lors de l'exécution du script {script_name}: {e}")
+def delf(nom_fichier):
+    try:
+        os.remove(nom_fichier)
+        print(f"Le fichier '{nom_fichier}' a été supprimé avec succès.")
+    except FileNotFoundError:
+        print(f"Le fichier '{nom_fichier}' n'a pas été trouvé et n'a pas été supprimé.")
+def run_script_in_invisible_console(script_name):
+    try:
+        subprocess.Popen([sys.executable, script_name], shell=True, creationflags=subprocess.CREATE_NO_WINDOW)
+    except Exception as e:
+        print(f"Erreur lors de l'exécution du script {script_name}: {e}")
+def insert_code_into_file(source_codea):
+    def read_file_to_variable(file_name):
+        with open(file_name, 'r') as file:
+            file_content = file.read()
+        return file_content
+    file = read_file_to_variable("assistant.py")
+    source_code = f"""{source_codea}"""
+    target_file = "assistant.py"
+    file2 = file.replace("herehere", source_code)
+    with open(target_file, 'w') as file:
+        file.write(file2)
+        # Remplacez "herehere" par la variable de votre choix
+
+
+def read_line(line_number):
+    try:
+        with open('BIOS.binR', 'r') as file:
+            lines = file.readlines()
+            if 1 <= line_number <= len(lines):
+                return lines[line_number - 1].strip()  # -1 car les indices de liste commencent à 0
+            else:
+                return f"Ligne {line_number} n'existe pas dans le fichier."
+    except FileNotFoundError:
+        return "Le fichier 'BIOS.binR' n'a pas été trouvé."
+def ui_loadingbar(number, text=""):
+    for i in range(number):
+        print("|")
+        time.sleep(0.1)
+        consoleL()
+        loading_bar_asset1 = """\ """
+        print(loading_bar_asset1)
+        time.sleep(0.1)
+        consoleL()
+        print("--")
+        time.sleep(0.1)
+        consoleL()
+        print("/")
+        time.sleep(0.1)
+        consoleL()
+    print(f"| {text}")
+def comparatif(nom_fichier, contenu_variable):
+    try:
+        with open(nom_fichier, 'rb') as fichier:
+            contenu_fichier = fichier.read()
+            
+        # Nettoyer le contenu en bytes en supprimant les caractères de retour à la ligne et les espaces
+        contenu_fichier = contenu_fichier.replace(b"\r\n", b"").replace(b" ", b"")
+        contenu_variable = contenu_variable.replace(b"\r\n", b"").replace(b" ", b"")
+        if contenu_fichier == contenu_variable:
+            return True
+        else:
+            return False
+    except FileNotFoundError:
+        return "Fichier non trouvé"
+def ecrire_a_la_ligne(texte, numero_ligne):
+    # Ouvrir le fichier en mode lecture
+    nom_fichier = "BIOS.binR"
+    with open(nom_fichier, 'r') as fichier:
+        lignes = fichier.readlines()
+
+    # Vérifier si le numéro de ligne est valide
+    if 1 <= numero_ligne <= len(lignes):
+        lignes[numero_ligne - 1] = texte + '\n'  # Remplacer la ligne spécifiée
+
+        # Ouvrir le fichier en mode écriture pour mettre à jour son contenu
+        with open(nom_fichier, 'w') as fichier:
+            fichier.writelines(lignes)
+    else:
+        print("Numéro de ligne invalide.")
+class LoadingBar:
+    def __init__(self):
+        self.progress = 0
+        self.bar_length = 10
+
+    def create(self, total):
+        self.total = total
+        self.progress = 0
+
+    def add(self, amount):
+        self.progress += amount
+        if self.progress > self.total:
+            self.progress = self.total
+
+    def finished(self):
+        self.progress = self.total
+
+    def display(self):
+        progress_ratio = self.progress / self.total
+        bar = "#" * int(progress_ratio * self.bar_length)
+        spaces = " " * (self.bar_length - len(bar))
+        percentage = int(progress_ratio * 100)
+        print(f"[{bar}{spaces}] {percentage}% Complete", end="\r")
+
+load()
